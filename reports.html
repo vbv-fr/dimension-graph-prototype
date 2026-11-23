@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta name="color-scheme" content="light">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FRINKS.AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+<style>
+/* Light only, as the app (index.css: color-scheme light). Values are the Tailwind classes used in frinksedge-report-frontend. */
+:root{
+  --primary:#ff4301; --dp:#e85d04; --dp-soft:#fff3ee;
+  --white:#fff; --black:#000; --g50:#f9fafb; --g100:#f3f4f6; --g200:#e5e7eb; --g300:#d1d5db; --g400:#9ca3af; --g500:#6b7280;
+  --g600:#4b5563; --g700:#374151; --g800:#1f2937; --g900:#111827;
+  --overlay:rgba(107,114,128,.75); --sidebar:#1e1c1c;
+  --green50:#f0fdf4; --green600:#16a34a; --green700:#15803d; --red50:#fef2f2; --red500:#ef4444; --red600:#dc2626;
+  --orange50:#fff7ed; --orange600:#ea580c; --blue50:#eff6ff; --blue500:#3b82f6; --blue600:#2563eb; --indigo800:#3730a3;
+  --shadow-sm:0 1px 2px 0 rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);
+  --shadow-xl:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0;border:0 solid var(--g200)}
+[hidden]{display:none !important}
+html,body{font-size:16px;height:100vh;width:100vw;overflow-y:hidden;color:#000;background:#fff}
+:root{font-family:'Outfit',sans-serif;line-height:1.5;font-weight:400;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-family:'Outfit',sans-serif;overflow-x:hidden}
+button,input{font:inherit;color:inherit;line-height:inherit}
+button{background:none;cursor:pointer}
+button:disabled{cursor:default}
+.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;display:block}
+.i14{width:14px;height:14px} .i18{width:18px;height:18px}
+
+/* ---- Sidebar (shared/layouts/main/sidebar.jsx, collapsed as the app opens by default) ---- */
+.side{position:fixed;left:0;top:0;z-index:100;width:114px;height:100vh;display:flex;flex-direction:column;align-items:center;overflow:hidden;white-space:nowrap;
+  padding:24px 8px;background:var(--sidebar);border-right:1px solid var(--g300);box-shadow:var(--shadow-md)}
+.logo{display:flex;align-items:center;justify-content:center;overflow:hidden;margin:12px 0 40px}
+.nav{margin-top:32px;flex:1;width:100%;list-style:none;display:flex;flex-direction:column;gap:8px}
+.nav a{display:flex;align-items:center;border-radius:6px;padding:8px 36px;color:#fff;overflow:hidden}
+.nav a:hover{background:rgba(255,255,255,.2)}
+.nav .ib{display:flex;width:24px;flex-shrink:0;align-items:center;justify-content:center}
+.collapse{display:flex;width:100%;align-items:center;justify-content:center;border-radius:6px;padding:8px 0;color:#fff}
+.collapse:hover{opacity:.75}
+.main{position:relative;margin-left:114px;width:calc(100% - 114px);height:100%;min-height:100vh;overflow-x:auto;background:#fff}
+
+/* ---- Header row (analytics/index.jsx ~1258-1326 + heading.jsx) ---- */
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;background:#fff}
+.hl{display:flex;align-items:center;min-width:0}
+.heading{display:flex;align-items:baseline;gap:8px;height:60px;margin-top:4px;padding:16px 20px;background:#fff}
+.heading .h1{font-size:30px;line-height:36px;font-weight:500;white-space:nowrap}
+.heading .hsub{display:flex;align-items:baseline;gap:8px;font-size:20px;line-height:28px;font-weight:500}
+/* The Heading's empty subcontent slot adds an 8px gap: pull the button back so it sits the title's 20px padding away. */
+.dgw{margin-left:-8px;margin-top:8px}
+.hr{display:flex;align-items:center;gap:12px;margin:8px 20px 0 0}
+.tabs{display:flex;align-items:center;height:36px;padding:4px;border-radius:8px;background:var(--g100)}
+.tabs button{display:flex;align-items:center;gap:4px;height:36px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;
+  border:1px solid transparent;border-width:0;color:var(--g500);background:transparent;white-space:nowrap}
+.tabs button + button{margin-left:4px}
+.tabs button:not(.on):hover{color:var(--g800)}
+.tabs button.on{background:var(--primary);color:#fff}
+.tabs .inf{display:flex;width:16px;height:16px;align-items:center;justify-content:center;color:var(--g500)}
+.tabs .on .inf{color:#fff}
+.search{position:relative;display:flex;align-items:center}
+.search > .i{position:absolute;left:12px;width:18px;height:18px;color:var(--g400)}
+.search input{height:36px;width:256px;border:1px solid var(--g200);border-radius:8px;padding:0 40px;font-size:14px;line-height:20px;background:#fff}
+.search input::placeholder{color:var(--g400)}
+.search input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+
+/* ---- shared/ui/Button.jsx: size lg + variant border, as the Module Outputs button ---- */
+.obtn{display:flex;align-items:center;gap:8px;height:32px;padding:0 12px;border:1px solid var(--primary);border-radius:6px;background:transparent;
+  color:var(--primary);font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.obtn:hover{opacity:.7;background:rgba(255,255,255,.9)}
+.obtn:disabled{background:var(--g300);color:var(--g500);border-color:transparent;cursor:not-allowed}
+/* size lg, primary, !p-0, 32x38 icon buttons */
+.ibtn{display:flex;align-items:center;justify-content:center;width:38px;height:32px;border:1px solid transparent;border-radius:6px;background:var(--primary);color:#fff;flex-shrink:0}
+.ibtn:hover{background:rgba(255,67,1,.9)}
+.ibtn:disabled{background:var(--g300);color:var(--g500);cursor:not-allowed}
+
+/* shared/components/Tooltip.jsx */
+.tipw{position:relative;display:inline-block}
+.tip{position:absolute;z-index:50;bottom:100%;left:50%;margin-bottom:8px;transform:translateX(-50%);width:max-content;max-width:200px;padding:4px 8px;
+  border:1px solid var(--g300);border-radius:4px;background:var(--g100);color:var(--g600);font-size:12px;line-height:16px;white-space:normal;overflow-wrap:break-word;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.tip.b{bottom:auto;top:100%;margin:8px 0 0}
+.tipw:hover > .tip{opacity:1}
+
+/* ---- Filter toolbar (~1331-1681) ---- */
+.pbody{display:flex;flex-direction:column;height:calc(100vh - 64px);min-height:0;min-width:0;background:#fff}
+.fbar{position:relative;border-bottom:1px solid var(--g200);padding:16px 20px 12px}
+.frow{display:flex;align-items:flex-start;gap:12px}
+.fleft{display:flex;flex:1;flex-wrap:wrap;align-items:center;gap:12px;min-width:0}
+.fright{display:flex;flex-shrink:0;align-items:flex-start;gap:8px}
+/* Filter.jsx / MultiSelectFilter.jsx / TimeRangeDropdown chip */
+.chip{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;height:38px;padding:0 12px;border-radius:8px;background:#fff;
+  font-size:13px;font-weight:500;color:var(--g700);white-space:nowrap;transition:background-color .15s}
+.chip:hover{background:var(--g50)}
+.chip.g6{gap:6px}
+.chip.tr:hover{background:var(--g100)}
+.chip .t{overflow:hidden;text-overflow:ellipsis}
+.chip .i{width:14px;height:14px;color:var(--g500);transition:transform .15s}
+.chip[aria-expanded="true"] .i{transform:rotate(180deg)}
+.chip:disabled{cursor:not-allowed;opacity:.6}
+.badge{position:absolute;top:-4px;right:-4px;display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;
+  background:var(--primary);color:#fff;font-size:10px;line-height:1;box-shadow:var(--shadow-sm)}
+.dd{position:absolute;left:0;top:100%;z-index:50;margin-top:4px;max-height:240px;overflow-y:auto;border:1px solid var(--g200);border-radius:8px;background:#fff;box-shadow:var(--shadow-lg)}
+.opt{display:flex;align-items:center;gap:10px;padding:8px 12px;color:var(--g700);cursor:pointer;transition:background-color .15s;white-space:nowrap}
+.opt:hover{background:var(--g50)}
+.opt .l{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.cb{display:flex;align-items:center;justify-content:center;width:14px;height:14px;flex-shrink:0;border:1px solid var(--g300);border-radius:2px;background:#fff}
+.cb.on{border-color:var(--g900)}
+.cb.on::after{content:"";width:8px;height:8px;border-radius:1px;background:var(--g900)}
+.cb.r{border-radius:999px} .cb.r.on::after{border-radius:999px}
+.ddh{padding:8px 12px;font-size:12px;line-height:16px;font-weight:600;text-transform:uppercase;letter-spacing:.025em;color:var(--g500);white-space:nowrap}
+
+/* ---- TimeRangeDropdown panel (index.jsx ~48-407, react-datepicker + frinks-dp overrides) ---- */
+.trw{position:relative;display:flex;flex-direction:column;gap:4px;z-index:32}
+.trp{position:absolute;left:0;top:100%;z-index:40;margin-top:4px;width:380px;overflow:hidden;border:1px solid var(--g200);border-radius:8px;background:#fff;box-shadow:var(--shadow-xl)}
+.trtabs{display:flex;border-bottom:1px solid var(--g100)}
+.trtabs button{flex:1;padding:10px 12px;font-size:12px;line-height:16px;font-weight:600;background:var(--g50);color:var(--g600);transition:background-color .15s}
+.trtabs button:hover{background:var(--g100)}
+.trtabs button.on{background:var(--primary);color:#fff}
+.dp{width:100%;padding:8px}
+.rdp{position:relative;display:inline-block;width:100%;background:#fff;color:#000;font-size:.8rem;font-family:inherit}
+.rdp-nav{position:absolute;top:14px;z-index:1;display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;overflow:hidden;text-indent:-999em;background:none}
+.rdp-nav.prev{left:2px} .rdp-nav.next{right:2px}
+.rdp-nav .ico{position:relative;top:-1px;width:0;font-size:20px;white-space:nowrap}
+.rdp-nav .ico::before{content:"";position:absolute;top:6px;display:block;width:9px;height:9px;border-style:solid;border-color:var(--g400);border-width:2px 2px 0 0}
+.rdp-nav.prev .ico::before{transform:rotate(225deg);right:-7px}
+.rdp-nav.next .ico::before{transform:rotate(45deg);left:-7px}
+.rdp-nav:hover .ico::before{border-color:#a6a6a6}
+.rdp-head{position:relative;text-align:center;background:#fff;border-bottom:1px solid #f0f0f0;padding:12px 0 8px}
+.rdp-month{font-size:15px;font-weight:600;color:#111;margin-bottom:8px;line-height:normal}
+.rdp-names{display:flex;justify-content:space-around;padding:0 4px;margin-bottom:-8px;white-space:nowrap}
+.rdp-names div{width:calc(100% / 7);margin:0;text-align:center;color:var(--g400);font-size:12px;font-weight:500;line-height:36px}
+.rdp-body{margin:0;padding:0 4px 4px;text-align:center}
+.rdp-week{display:flex;justify-content:flex-start;white-space:nowrap}
+.day{position:relative;display:inline-flex;align-items:center;justify-content:center;width:calc(100% / 7);height:39px;line-height:39px;margin:0;padding:0;
+  border-radius:50%;font-size:13px;color:var(--g700);cursor:pointer;transition:all .2s ease}
+.day:hover:not(.sel):not(.rs):not(.re):not(.single){background-image:radial-gradient(circle,#fff3ee 17px,transparent 18px);color:var(--dp)}
+.day.sel,.day.single{background:radial-gradient(circle,var(--dp) 17px,transparent 18px) center no-repeat;color:#fff;font-weight:600}
+.day.today{font-weight:800;text-decoration:underline}
+.day.dis{color:var(--g300);cursor:not-allowed}
+.day.dis:hover{background-image:none;color:var(--g300)}
+.day.inr{background-color:transparent;background-image:linear-gradient(#fff3ee,#fff3ee);background-size:100% 34px;background-repeat:no-repeat;background-position:center;color:var(--dp);border-radius:0}
+.day.rs{background-image:radial-gradient(circle,var(--dp) 17px,transparent 18px),linear-gradient(to right,transparent 50%,#fff3ee 50%);background-size:100% 100%,100% 34px;
+  background-position:center,center;background-repeat:no-repeat,no-repeat;color:#fff;border-radius:0}
+.day.re{background-image:radial-gradient(circle,var(--dp) 17px,transparent 18px),linear-gradient(to left,transparent 50%,#fff3ee 50%);background-size:100% 100%,100% 34px;
+  background-position:center,center;background-repeat:no-repeat,no-repeat;color:#fff;border-radius:0}
+.day.rs.re{background:radial-gradient(circle,var(--dp) 17px,transparent 18px) center no-repeat;border-radius:50%}
+.trtime{display:flex;align-items:center;gap:8px;border-top:1px solid var(--g100);padding:12px 16px}
+.trtime span{width:48px;font-size:12px;line-height:16px;font-weight:500;color:var(--g500)}
+/* index.css input[type='time'] wins over the utility classes except !border (1px) */
+.trtime input{flex:1;min-width:0;border:1px solid #000;border-radius:5px;padding:3px;margin-left:0;font-size:medium;background:var(--g50);transition:all .15s}
+.trtime input:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 1px var(--primary)}
+
+/* ---- Summary bar (~1684-1724) ---- */
+.sum{display:flex;border-bottom:1px solid var(--g200);background:#fff}
+.sum > div{display:flex;flex-grow:1;align-items:center;padding:10px 20px;border-right:1px solid var(--g200);font-size:14px;line-height:20px}
+.sum > div:last-child{border-right:0}
+.sum span{font-weight:500}
+.sum b{margin-left:auto;font-weight:600}
+.s-total span{color:var(--g600)}
+.s-pass{background:var(--green50);color:var(--green700)}
+.s-fail{background:var(--red50);color:var(--red600)}
+.s-def{background:var(--orange50);color:var(--orange600)}
+.s-rj{background:var(--blue50)} .s-rj span{color:var(--blue600)}
+
+/* ---- ResultTable.jsx / shared/ui/Table.jsx ---- */
+.tarea{position:relative;display:flex;flex:1;min-height:0;min-width:0;overflow:hidden}
+.tcol{margin-top:12px;display:flex;flex:1;flex-direction:column;min-width:0}
+.tpad{display:flex;flex:1;flex-direction:column;min-height:0;min-width:0;overflow:hidden;padding:0 20px 20px}
+.tscroll{flex:1;min-height:0;min-width:0;overflow:auto}
+table{width:100%;min-width:100%;border-collapse:collapse;table-layout:fixed}
+thead{position:sticky;top:0;z-index:11}
+th{position:sticky;top:0;z-index:11;background:var(--primary);color:#fff;font-size:16px;line-height:24px;font-weight:500;text-align:center;padding:16px 8px}
+th::after{content:"";position:absolute;top:10px;bottom:10px;right:0;width:2px;border-radius:16px;background:#fff}
+th:last-child::after{display:none}
+tbody{background:#fff;border-top:1px solid var(--g300)}
+tbody tr + tr{border-top:1px solid var(--g200)}
+td{padding:8px;color:#000;overflow:visible;vertical-align:middle}
+td > div{display:flex;align-items:center;justify-content:center;width:100%;height:100%;text-align:center}
+td.empty{padding:8px 0;text-align:center;font-size:16px;color:var(--g600);background:#fff}
+.res{font-size:14px;line-height:20px;font-weight:600}
+.res.p{color:var(--green600)} .res.f{color:var(--red500)}
+.lnk{display:flex;align-items:center;gap:6px;color:var(--blue500);font-weight:500;transition:color .15s}
+.lnk:hover{color:var(--indigo800)}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:16px;border-top:1px solid var(--g200);padding:8px 16px}
+.pager span{font-size:14px;line-height:20px;color:var(--g500)}
+.pager button{display:flex;border-radius:4px;padding:4px}
+.pager button:hover{background:var(--g100)}
+.pager button:disabled{opacity:.3}
+.pager .i{width:18px;height:18px}
+
+/* ---- modules/modal/index.jsx ---- */
+.ov{position:fixed;left:0;top:0;z-index:99999;width:100vw;height:100vh;border-radius:8px;background:var(--overlay);transition:opacity .15s}
+.md{position:relative;top:50%;margin:0 auto;transform:translateY(-50%);width:100%;max-width:1024px;border-radius:8px;background:#fff;text-align:left;box-shadow:var(--shadow-xl)}
+.md-in{border-radius:8px;background:#fff;display:flex;flex-direction:column;color:#000}
+.md-head{display:flex;align-items:center;justify-content:space-between;padding:16px 24px}
+.md-title{display:flex;align-items:baseline;gap:8px;min-width:0}
+.md-title h3{font-size:16px;line-height:24px;font-weight:600;color:var(--g800);text-align:left}
+.md-title span{font-size:14px;line-height:20px;color:var(--g500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.md-x{display:flex;cursor:pointer}
+/* Dimension Graph modal body */
+.dgc{display:flex;align-items:center;gap:12px;padding:0 24px 12px}
+.dgc .sp{margin-left:auto}
+.dgdd{max-height:320px;min-width:100%}
+.dgdd .u{margin-left:auto;padding-left:24px;font-size:13px;color:var(--g500)}
+.dgdd .opt.off{color:var(--g400);cursor:not-allowed}
+.dgdd .opt.off:hover{background:transparent}
+.dgdd .opt.off .u{color:var(--g400)}
+.dgdd .opt.off .cb{border-color:var(--g200)}
+.dlw{position:relative;z-index:31}
+.mnu{position:absolute;right:0;top:100%;z-index:40;margin-top:4px;min-width:168px;padding:4px 0;border:1px solid var(--g200);border-radius:8px;background:#fff;box-shadow:var(--shadow-lg)}
+.mnu button{display:flex;width:100%;align-items:center;gap:10px;padding:8px 12px;text-align:left;font-size:14px;line-height:20px;font-weight:500;color:var(--g700);white-space:nowrap}
+.mnu button:hover{background:var(--g50)}
+.mnu .i{color:var(--g500)}
+.dglim{padding:0 24px 8px;font-size:12px;line-height:16px;color:var(--g500)}
+.dgchart{height:440px;padding:0 24px 24px}
+.dgcv{position:relative;width:100%;height:100%}
+.dgempty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;line-height:20px;color:var(--g500)}
+
+/* Prototype-only switch, shown when a screen is opened on its own (hidden inside the workflow shell) */
+.proto{position:fixed;left:130px;bottom:12px;z-index:200;display:flex;align-items:center;gap:8px;padding:4px 4px 4px 10px;border:1px dashed var(--g300);border-radius:999px;background:#fff;
+  font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--g600);box-shadow:var(--shadow-sm)}
+.seg{display:inline-flex;border:1px solid var(--g300);border-radius:999px;padding:2px}
+.seg button{font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 10px;border-radius:999px;color:var(--g500)}
+.seg button[aria-pressed="true"]{background:var(--sidebar);color:#fff}
+.embed .proto{display:none}
+
+@media (max-width:767px){
+  .side{display:none}
+  .main{margin-left:0;width:100%}
+  .top{flex-wrap:wrap}
+  .heading{padding:12px 16px}
+  .heading .h1{font-size:24px;line-height:32px}
+  .hr{margin:0 16px 8px;flex-wrap:wrap}
+  .search input{width:200px}
+  .frow{flex-wrap:wrap}
+  .tpad{padding:0 16px 16px}
+  table{min-width:900px}
+  .sum{flex-wrap:wrap} .sum > div{flex-basis:50%}
+  .md{max-width:calc(100vw - 16px)}
+  .dgc{flex-wrap:wrap;padding:0 16px 12px}
+  .md-head{padding:12px 16px}
+  .dgchart{padding:0 16px 16px;height:360px}
+  .trp{width:min(380px,calc(100vw - 32px))}
+  .proto{left:12px}
+}
+</style>
+</head>
+<body>
+<script>try { if (window.self !== window.top) document.documentElement.classList.add('embed'); } catch (e) { document.documentElement.classList.add('embed'); }</script>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+  <symbol id="i-edit2" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></symbol>
+  <symbol id="i-dl" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></symbol>
+</svg>
+
+<aside class="side">
+  <a class="logo" href="#" onclick="return false" aria-label="Home">
+    <svg width="60" height="60" viewBox="0 0 230 52" preserveAspectRatio="xMinYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg"><g><path fill-rule="evenodd" clip-rule="evenodd" d="M19.3373 23.3047C19.4945 23.3047 19.6219 23.4253 19.6219 23.5742L19.6219 30.8503C19.6219 30.9991 19.4945 31.1197 19.3373 31.1197C19.1801 31.1197 19.0527 30.9991 19.0527 30.8503L19.0527 23.5742C19.0527 23.4253 19.1801 23.3047 19.3373 23.3047Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M25.7337 24.7076C25.7015 24.8533 25.5507 24.9467 25.3968 24.9162L19.2783 23.7035C19.1244 23.673 19.0258 23.5302 19.058 23.3845C19.0902 23.2389 19.241 23.1455 19.3949 23.176L25.5134 24.3886C25.6673 24.4191 25.7659 24.5619 25.7337 24.7076Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M20.9018 23.5742C21.0589 23.5742 21.1864 23.6949 21.1864 23.8437V32.3325C21.1864 32.4813 21.0589 32.602 20.9018 32.602C20.7446 32.602 20.6172 32.4813 20.6172 32.3325V23.8437C20.6172 23.6949 20.7446 23.5742 20.9018 23.5742Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M22.4672 23.8437C22.6244 23.8437 22.7518 23.9644 22.7518 24.1132L22.7518 33.8147C22.7518 33.9635 22.6244 34.0842 22.4672 34.0842C22.31 34.0842 22.1826 33.9635 22.1826 33.8147L22.1826 24.1132C22.1826 23.9644 22.31 23.8437 22.4672 23.8437Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M24.0326 24.1128C24.1898 24.1128 24.3172 24.2334 24.3172 24.3823V35.2964C24.3172 35.4452 24.1898 35.5659 24.0326 35.5659C23.8755 35.5659 23.748 35.4452 23.748 35.2964V24.3823C23.748 24.2334 23.8755 24.1128 24.0326 24.1128Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M25.4555 24.3828C25.6127 24.3828 25.7401 24.5035 25.7401 24.6523V36.6444C25.7401 36.7932 25.6127 36.9138 25.4555 36.9138C25.2983 36.9138 25.1709 36.7932 25.1709 36.6444V24.6523C25.1709 24.5035 25.2983 24.3828 25.4555 24.3828Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M19.0527 7H39.9697C40.1269 7 40.2543 7.12065 40.2543 7.26948C40.2543 7.41832 40.1269 7.53897 39.9697 7.53897H19.6219V16.0529L25.6487 15.2193H35.7721C35.9293 15.2193 36.0567 15.3399 36.0567 15.4888C36.0567 15.6376 35.9293 15.7583 35.7721 15.7583H25.69L19.0527 16.6763V7Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M20.6885 8.48193H37.7636C37.9207 8.48193 38.0481 8.60259 38.0481 8.75142C38.0481 8.90025 37.9207 9.0209 37.7636 9.0209H21.2576V16.0949C21.2576 16.2437 21.1302 16.3644 20.9731 16.3644C20.8159 16.3644 20.6885 16.2437 20.6885 16.0949V8.48193Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M22.2539 9.96387H36.412C36.5692 9.96387 36.6966 10.0845 36.6966 10.2334C36.6966 10.3822 36.5692 10.5028 36.412 10.5028H22.8231V15.8925C22.8231 16.0414 22.6957 16.162 22.5385 16.162C22.3813 16.162 22.2539 16.0414 22.2539 15.8925V9.96387Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M23.8193 11.4463H34.0644C34.2216 11.4463 34.349 11.5669 34.349 11.7158C34.349 11.8646 34.2216 11.9853 34.0644 11.9853H24.3885V15.6907C24.3885 15.8395 24.2611 15.9602 24.1039 15.9602C23.9467 15.9602 23.8193 15.8395 23.8193 15.6907V11.4463Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M25.3135 12.7939H32.9261C33.0833 12.7939 33.2107 12.9146 33.2107 13.0634C33.2107 13.2123 33.0833 13.3329 32.9261 13.3329H25.8826V15.4888C25.8826 15.6376 25.7552 15.7583 25.5981 15.7583C25.4409 15.7583 25.3135 15.6376 25.3135 15.4888V12.7939Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M26.865 16.8354L33.998 16.944C34.1552 16.9463 34.2805 17.0689 34.278 17.2177C34.2755 17.3665 34.146 17.4852 33.9889 17.4829L26.8798 17.3747L19.3567 17.8614C19.1999 17.8715 19.0641 17.7594 19.0534 17.6109C19.0427 17.4624 19.1611 17.3338 19.3179 17.3237L26.865 16.8354Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M26.8698 18.1353L32.7569 18.2437C32.9141 18.2466 33.039 18.3696 33.0359 18.5184C33.0329 18.6672 32.903 18.7855 32.7459 18.7826L26.875 18.6744L19.3481 18.9449C19.1911 18.9506 19.0589 18.8346 19.0529 18.6859C19.047 18.5371 19.1695 18.412 19.3265 18.4064L26.8698 18.1353Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M19.0528 19.7007C19.055 19.5518 19.1843 19.4329 19.3414 19.4351L31.265 19.5976C31.4222 19.5997 31.5478 19.7221 31.5455 19.8709C31.5432 20.0197 31.414 20.1386 31.2568 20.1365L19.3332 19.974C19.1761 19.9719 19.0505 19.8495 19.0528 19.7007Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M19.0531 20.7743C19.0611 20.6257 19.1948 20.5113 19.3518 20.5189L27.2108 20.8977H29.8533C30.0105 20.8977 30.1379 21.0183 30.1379 21.1672C30.1379 21.316 30.0105 21.4367 29.8533 21.4367H27.1964L19.3229 21.0572C19.1659 21.0496 19.0451 20.923 19.0531 20.7743Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path fill-rule="evenodd" clip-rule="evenodd" d="M19.0539 21.9558C19.068 21.8075 19.2063 21.6982 19.3629 21.7116L26.968 22.3604H28.4457C28.6028 22.3604 28.7302 22.4811 28.7302 22.6299C28.7302 22.7787 28.6028 22.8994 28.4457 22.8994H26.9424L19.3118 22.2483C19.1553 22.235 19.0398 22.104 19.0539 21.9558Z" fill="white" stroke="white" stroke-width="0.2" stroke-linecap="round" /><path d="M9.48544 14.0082H7.28711V-0.0317383H21.3271V2.16659H9.48544V14.0082Z" fill="#f8fafa" /><path d="M21.3271 44.1406H7.28711V30.1006H9.48544V41.9422H21.3271V44.1406Z" fill="#f8fafa" /><path d="M50.4033 14.0082H48.2049V2.16659H36.3633V-0.0317383H50.4033V14.0082Z" fill="#f8fafa" /><path d="M50.4033 44.1406H36.3633V41.9422H48.2049V30.1006H50.4033V44.1406Z" fill="#f8fafa" /></g></svg>
+  </a>
+  <ul class="nav">
+    <li><a href="#" title="Analytics &amp; Reports" onclick="return false"><span class="ib">
+      <svg width="14" height="18" viewBox="0 0 14 18" fill="none"><path d="M13 17V7M7 17V1M1 17V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span></a></li>
+  </ul>
+  <div style="display:flex;width:100%;flex-direction:column;gap:8px">
+    <button class="collapse" type="button" aria-label="Expand sidebar">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 18 8 13 3 8"/><line x1="11" y1="9" x2="11" y2="17"/><line x1="14" y1="9" x2="14" y2="17"/></svg>
+    </button>
+  </div>
+</aside>
+
+<div class="main">
+  <header class="top">
+    <div class="hl">
+      <div class="heading"><div class="h1">Analytics &amp; Reports</div><div class="hsub"></div></div>
+      <div class="dgw" id="dgWrap" hidden>
+        <button type="button" class="obtn" id="dgBtn"><svg class="i i14"><use href="#i-trend"/></svg>Dimension Graph</button>
+      </div>
+    </div>
+    <div class="hr">
+      <div class="tabs">
+        <button type="button" id="tabCycle" class="on">Cycle-wise</button>
+        <button type="button" id="tabMinute"><span>Minute-wise</span>
+          <span class="tipw"><span class="inf"><svg class="i i18"><use href="#i-info"/></svg></span><span class="tip b">For deployments made in Fast Mode.</span></span>
+        </button>
+      </div>
+      <div class="search">
+        <svg class="i"><use href="#i-search"/></svg>
+        <input type="text" id="search" placeholder="Search" aria-label="Search" autocomplete="off">
+      </div>
+    </div>
+  </header>
+
+  <div class="pbody">
+    <div class="fbar">
+      <div class="frow">
+        <div class="fleft">
+          <div class="trw" id="pageTR"></div>
+          <div style="position:relative;z-index:31" id="instWrap"></div>
+          <div style="position:relative;z-index:30" id="varWrap"></div>
+          <div style="position:relative;z-index:29" id="outWrap">
+            <button type="button" class="chip" style="width:100px"><span class="t">Outcome</span><svg class="i"><use href="#i-down"/></svg><span class="badge">2</span></button>
+          </div>
+        </div>
+        <div class="tipw" id="moWrap"><button type="button" class="obtn" id="moBtn"><svg class="i i14"><use href="#i-list"/></svg>Module Outputs</button></div>
+        <div class="tipw"><button type="button" class="ibtn" aria-label="Edit Table"><svg class="i"><use href="#i-edit2"/></svg></button><div class="tip">Edit Table</div></div>
+        <div class="tipw"><button type="button" class="ibtn" id="pageDl" aria-label="Download"><svg class="i"><use href="#i-dl"/></svg></button><div class="tip">Download</div></div>
+        <div class="fright">
+          <div class="tipw" id="addFilterWrap"><button type="button" class="ibtn" aria-label="Add Filter"><svg class="i"><use href="#i-filter"/></svg></button><div class="tip">Add Filter</div></div>
+          <div class="tipw"><button type="button" class="ibtn" id="refresh" aria-label="Refresh"><svg class="i"><use href="#i-refresh"/></svg></button><div class="tip">Refresh</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sum">
+      <div class="s-total"><span>Total</span><b id="sTotal">0</b></div>
+      <div class="s-pass"><span>Pass</span><b id="sPass">0</b></div>
+      <div class="s-fail"><span>Fail</span><b id="sFail">0</b></div>
+      <div class="s-def"><span>Defect %</span><b id="sDef">0.000%</b></div>
+      <div class="s-rj"><span>Reverse Judgement</span><b>0</b></div>
+    </div>
+
+    <div class="tarea"><div class="tcol"><div class="tpad">
+      <div class="tscroll" id="tscroll">
+        <table id="rtable"><colgroup id="cols"></colgroup><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table>
+      </div>
+      <div class="pager" id="pager">
+        <span id="pagerText">0 results</span>
+        <button type="button" id="pgPrev" disabled aria-label="Previous page"><svg class="i"><use href="#i-left"/></svg></button>
+        <button type="button" id="pgNext" disabled aria-label="Next page"><svg class="i"><use href="#i-right"/></svg></button>
+      </div>
+    </div></div></div>
+  </div>
+</div>
+
+<!-- Dimension Graph modal (custom modules/modal: grey overlay, white rounded card, max-w-5xl) -->
+<div class="ov" id="dg" role="dialog" aria-modal="true" aria-labelledby="dgTitle" hidden>
+  <div class="md" id="dgCard">
+    <div class="md-in">
+      <div class="md-head">
+        <div class="md-title"><h3 id="dgTitle">Dimension Graph</h3><span id="dgInst">Bracket Line</span></div>
+        <button type="button" class="md-x" id="dgClose" aria-label="Close">
+          <svg width="25" height="25" viewBox="0 0 32 32" fill="none"><path d="M24 8L8 24M8 8L24 24" stroke="#0E0F0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div class="dgc">
+        <div style="position:relative;z-index:33" id="dimWrap"></div>
+        <div class="trw" id="modalTR"></div>
+        <div class="sp dlw" id="dlWrap">
+          <button type="button" class="obtn" id="dlBtn" aria-haspopup="menu"><svg class="i i14"><use href="#i-dl"/></svg>Download</button>
+          <div class="mnu" id="dlMenu" role="menu" hidden>
+            <button type="button" role="menuitem" id="dlPng">Download PNG</button>
+            <button type="button" role="menuitem" id="dlCsv">Download CSV</button>
+          </div>
+        </div>
+      </div>
+      <p class="dglim" id="dgLimit" hidden>Showing the latest 20,000 cycles. Narrow the time range.</p>
+      <div class="dgchart"><div class="dgcv" id="dgCv"><canvas id="dgCanvas" role="img" aria-label="Dimension values over time"></canvas><div class="dgempty" id="dgEmpty" hidden></div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="proto" id="proto">Prototype
+  <div class="seg" id="seg" role="group" aria-label="Mode">
+    <button type="button" data-mode="today" aria-pressed="false">Today</button>
+    <button type="button" data-mode="after" aria-pressed="true">After change</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="shared.js?v=20261123b"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const icon = (id, cls) => `<svg class="i${cls ? ' ' + cls : ''}"><use href="#${id}"/></svg>`;
+
+  if (typeof Chart !== 'undefined') Chart.defaults.font.family = "'Outfit', sans-serif";
+
+  // ---------- URL: mode + step ----------
+  const params = new URLSearchParams(location.search);
+  const mode = params.get('mode') === 'today' ? 'today' : 'after';
+  const after = mode === 'after';
+  const STATES = ['dims', 'modal-empty', 'pick', 'one', 'multi', 'units', 'range', 'download', 'nodata', 'nodims', 'minute', 'limit'];
+  let stateName = params.get('state') || 'dims';
+  if (!STATES.includes(stateName)) stateName = 'dims';
+
+  // ---------- Shared state + this step's overrides ----------
+  let S = DG.load();
+  const BOTH = ['Bracket 120', 'Bracket 150'];
+  const D1 = { variant: 'Bracket 120', id: 'Distance_1' };
+  const MULTI = [D1, { variant: 'Bracket 120', id: 'Distance_2' }, { variant: 'Bracket 120', id: 'Angle_1' }];
+  const MODAL_STATES = ['modal-empty', 'pick', 'one', 'multi', 'units', 'range', 'download', 'nodata', 'limit'];
+  const ui = { tab: 'cycle', page: 1, modal: false, mRange: null, dimsOpen: false, dlOpen: false, instOpen: false, varOpen: false, hasData: false };
+  (function applyState() {
+    const bracket = () => { S.instance = 'Bracket Line'; if (S.variants.length === 0 || !S.variants.every((v) => BOTH.includes(v))) S.variants = BOTH.slice(); };
+    switch (stateName) {
+      case 'dims': S.instance = 'Bracket Line'; S.variants = BOTH.slice(); break;
+      case 'modal-empty': bracket(); S.dims = []; break;
+      case 'pick': bracket(); S.dims = [D1]; ui.dimsOpen = true; break;
+      case 'one': bracket(); S.dims = [D1]; break;
+      case 'multi': bracket(); S.dims = MULTI.slice(); break;
+      case 'units': bracket(); S.dims = [D1, { variant: 'Bracket 120', id: 'Angle_1' }]; ui.dimsOpen = true; break;
+      case 'range': case 'download': case 'nodata': case 'limit':
+        bracket(); if (!S.dims.length) S.dims = MULTI.slice(); if (stateName === 'download') ui.dlOpen = true; break;
+      case 'nodims': S.instance = 'Label Check'; S.variants = ['Label 200', 'Label 300']; S.dims = []; break;
+      case 'minute': S.instance = 'Bracket Line'; S.variants = BOTH.slice(); ui.tab = 'minute'; break;
+      default: break;
+    }
+    S = DG.normalize(S);
+    DG.save(S);
+    if (after && MODAL_STATES.includes(stateName)) {
+      ui.modal = true;
+      ui.mRange = { from: S.range.from, to: S.range.to };
+      const today = DG.dayStart(Date.now());
+      if (stateName === 'range') ui.mRange = { from: today - 2 * DG.DAY, to: DG.dayEnd(today) };
+      if (stateName === 'nodata') ui.mRange = { from: new Date(2026, 8, 15).getTime(), to: DG.dayEnd(new Date(2026, 8, 15).getTime()) };
+      if (stateName === 'limit') ui.mRange = { from: DG.DATA_START - 6 * 3600000, to: DG.dayEnd(today) };
+    } else { ui.dimsOpen = false; ui.dlOpen = false; }
+  })();
+  const persist = () => DG.save(S);
+  const instObj = () => DG.instance(S.instance);
+  const showDgButton = () => after && ui.tab === 'cycle' && !!S.instance && DG.hasDims(S.instance);
+
+  // ---------- TimeRangeDropdown (index.jsx 48-407) ----------
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function TimeRange(root, getRange, setRange, onOpen) {
+    const st = { open: false, tab: 'start', start: null, end: null, view: null };
+    const sync = () => { const r = getRange(); st.start = r ? new Date(r.from) : null; st.end = r ? new Date(r.to) : null; };
+    sync();
+    const selected = () => (st.tab === 'start' ? st.start : st.end);
+    const pad = (n) => String(n).padStart(2, '0');
+    const hm = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const dOnly = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    function viewFor() { const s = selected() || new Date(); return new Date(s.getFullYear(), s.getMonth(), 1); }
+    function commit() { if (st.start && st.end) setRange({ from: st.start.getTime(), to: st.end.getTime() }); }
+    function calendar() {
+      const v = st.view, y = v.getFullYear(), m = v.getMonth();
+      const now = new Date(), maxD = dOnly(now), minD = st.tab === 'end' && st.start ? dOnly(st.start) : null;
+      const first = new Date(y, m, 1), gridStart = new Date(y, m, 1 - first.getDay());
+      const last = new Date(y, m + 1, 0);
+      const s = st.start ? dOnly(st.start) : null, e = st.end ? dOnly(st.end) : null, sel = selected() ? dOnly(selected()) : null;
+      const prevOk = !(minD != null && new Date(y, m, 0).getTime() < minD);
+      const nextOk = new Date(y, m + 1, 1).getTime() <= maxD;
+      let weeks = '', d = new Date(gridStart);
+      do {
+        let w = '';
+        for (let i = 0; i < 7; i++) {
+          const t = d.getTime(), cls = ['day'];
+          if (t === sel) cls.push('sel');
+          if (t === dOnly(now)) cls.push('today');
+          const dis = t > maxD || (minD != null && t < minD);
+          if (dis) cls.push('dis');
+          if (s != null && e != null) { if (t >= s && t <= e) cls.push('inr'); if (t === s) cls.push('rs'); if (t === e) cls.push('re'); }
+          else if (s != null && t === s) cls.push('single');
+          else if (e != null && t === e) cls.push('single');
+          w += `<div class="${cls.join(' ')}" role="option" aria-disabled="${dis}" data-day="${t}">${d.getDate()}</div>`;
+          d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+        }
+        weeks += `<div class="rdp-week">${w}</div>`;
+      } while (d.getTime() <= last.getTime());
+      return `<div class="rdp">` +
+        (prevOk ? '<button type="button" class="rdp-nav prev" data-nav="-1" aria-label="Previous Month"><span class="ico">Previous Month</span></button>' : '') +
+        (nextOk ? '<button type="button" class="rdp-nav next" data-nav="1" aria-label="Next Month"><span class="ico">Next Month</span></button>' : '') +
+        `<div class="rdp-head"><h2 class="rdp-month">${MONTHS[m]} ${y}</h2><div class="rdp-names">${['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((n) => `<div>${n}</div>`).join('')}</div></div>` +
+        `<div class="rdp-body" role="listbox">${weeks}</div></div>`;
+    }
+    function render() {
+      const sl = DG.fmtChip(st.start && st.start.getTime()), el = DG.fmtChip(st.end && st.end.getTime());
+      const label = sl && el ? `${sl} → ${el}` : sl ? `${sl} → -` : 'Time Range';
+      let html = `<button type="button" class="chip g6 tr" data-act="chip" aria-expanded="${st.open}"><span>${esc(label)}</span>${icon('i-down')}</button>`;
+      if (st.open) {
+        const sp = selected();
+        let min = '', max = '';
+        if (st.tab === 'end' && st.start && st.end && st.start.toDateString() === st.end.toDateString()) min = hm(new Date(st.start.getTime() + 60000));
+        if (st.tab === 'start' && st.start && st.end && st.start.toDateString() === st.end.toDateString()) max = hm(new Date(st.end.getTime() - 60000));
+        html += `<div class="trp">` +
+          `<div class="trtabs"><button type="button" data-tab="start" class="${st.tab === 'start' ? 'on' : ''}">Start: ${esc(sl || 'Not selected')}</button>` +
+          `<button type="button" data-tab="end" class="${st.tab === 'end' ? 'on' : ''}">End: ${esc(el || '-')}</button></div>` +
+          `<div class="dp">${calendar()}</div>` +
+          `<div class="trtime"><span>Time:</span><input type="time" value="${sp ? hm(sp) : (st.tab === 'start' ? '00:00' : '23:59')}"${min ? ` min="${min}"` : ''}${max ? ` max="${max}"` : ''}></div></div>`;
+      }
+      root.innerHTML = html;
+    }
+    root.addEventListener('click', (e) => {
+      const t = e.target.closest('[data-act],[data-tab],[data-nav],[data-day]');
+      if (!t) return;
+      if (t.dataset.act === 'chip') {
+        if (!st.open) { st.open = true; st.tab = 'start'; st.view = viewFor(); render(); if (onOpen) onOpen(); return; }
+        if (!st.start || !st.end) return;           // both dates needed to close
+        st.open = false; render(); return;
+      }
+      if (t.dataset.tab) { st.tab = t.dataset.tab; st.view = viewFor(); render(); return; }
+      if (t.dataset.nav) { st.view = new Date(st.view.getFullYear(), st.view.getMonth() + Number(t.dataset.nav), 1); render(); return; }
+      if (t.dataset.day) {
+        if (t.classList.contains('dis')) return;
+        const day = new Date(Number(t.dataset.day));
+        if (st.tab === 'start') {
+          const keep = st.start || new Date(new Date().setHours(0, 0, 0, 0));   // react-datepicker keeps the selected time
+          day.setHours(keep.getHours(), keep.getMinutes(), 0, 0);
+          st.start = day; st.end = null; st.tab = 'end'; st.view = viewFor(); render();
+        } else {
+          day.setHours(23, 59, 59, 999);
+          st.end = day; st.open = false; render(); commit();
+        }
+      }
+    });
+    root.addEventListener('change', (e) => {
+      if (e.target.type !== 'time' || !e.target.value) return;
+      const [h, m] = e.target.value.split(':').map(Number);
+      const sp = selected();
+      const base = sp ? new Date(sp) : st.tab === 'start' ? new Date(new Date().setHours(0, 0, 0, 0))
+        : st.start ? new Date(new Date(st.start).setHours(23, 59, 59, 999)) : new Date(new Date().setHours(23, 59, 59, 999));
+      base.setHours(h, m, 0, 0);
+      if (st.tab === 'start') { if (st.end && base >= st.end) st.end = new Date(base.getTime() + 60000); st.start = base; }
+      else if (st.start && base <= st.start) st.end = new Date(st.start.getTime() + 60000);
+      else st.end = base;
+      render(); commit();
+    });
+    document.addEventListener('mousedown', (e) => {
+      if (!st.open || root.contains(e.target)) return;
+      if (!st.start || !st.end) return;
+      st.open = false; render();
+    });
+    return { render, sync: () => { sync(); render(); }, setOpen: (o) => { st.open = o; st.tab = 'start'; st.view = viewFor(); render(); }, get open() { return st.open; } };
+  }
+
+  // ---------- Reports page ----------
+  const pageTR = TimeRange($('pageTR'), () => S.range, (r) => { S.range = r; ui.page = 1; persist(); renderPage(); });
+
+  function renderInstance() {
+    const opts = DG.INSTANCES.map((i) => i.name);
+    let html = `<button type="button" class="chip g6" style="max-width:131px" data-act="inst" aria-expanded="${ui.instOpen}"><span class="t">${esc(S.instance || 'Instance')}</span>${icon('i-down')}</button>`;
+    if (ui.instOpen) html += `<div class="dd" style="min-width:150px">` + opts.map((n) => `<label class="opt" data-inst="${esc(n)}"><span class="cb r${n === S.instance ? ' on' : ''}"></span><span class="l">${esc(n)}</span></label>`).join('') + '</div>';
+    $('instWrap').innerHTML = html;
+  }
+  function renderVariant() {
+    const inst = instObj(), n = S.variants.length;
+    let html = `<button type="button" class="chip" style="max-width:240px" data-act="var" aria-expanded="${ui.varOpen}"${inst ? '' : ' disabled'}><span class="t">Variant</span>${icon('i-down')}${n ? `<span class="badge">${n}</span>` : ''}</button>`;
+    if (ui.varOpen && inst) html += `<div class="dd" style="min-width:150px">` + inst.variants.map((v) => `<div class="opt" data-var="${esc(v.name)}"><span class="cb${S.variants.includes(v.name) ? ' on' : ''}"></span><span class="l">${esc(v.name)}</span></div>`).join('') + '</div>';
+    $('varWrap').innerHTML = html;
+  }
+  $('instWrap').addEventListener('click', (e) => {
+    const t = e.target.closest('[data-act],[data-inst]');
+    if (!t) return;
+    if (t.dataset.act === 'inst') { ui.instOpen = !ui.instOpen; renderInstance(); return; }
+    e.preventDefault();
+    const n = t.dataset.inst;
+    S.instance = n === S.instance ? '' : n;           // Filter.jsx: picking the selected option clears it
+    S.variants = []; S.dims = []; ui.page = 1;         // changing instance clears variant (index.jsx 680-711)
+    persist(); renderPage();
+  });
+  $('varWrap').addEventListener('click', (e) => {
+    const t = e.target.closest('[data-act],[data-var]');
+    if (!t) return;
+    if (t.dataset.act === 'var') { ui.varOpen = !ui.varOpen; renderVariant(); return; }
+    e.stopPropagation(); e.preventDefault();
+    const v = t.dataset.var;
+    S.variants = S.variants.includes(v) ? S.variants.filter((x) => x !== v) : S.variants.concat(v);
+    ui.page = 1; persist(); renderPage();
+  });
+  document.addEventListener('mousedown', (e) => {
+    if (ui.instOpen && !$('instWrap').contains(e.target)) { ui.instOpen = false; renderInstance(); }
+    if (ui.varOpen && !$('varWrap').contains(e.target)) { ui.varOpen = false; renderVariant(); }
+  });
+  $('tabCycle').addEventListener('click', () => { if (ui.tab !== 'cycle') { ui.tab = 'cycle'; renderPage(); } });
+  $('tabMinute').addEventListener('click', (e) => { if (e.target.closest('.tipw')) return; if (ui.tab !== 'minute') { ui.tab = 'minute'; renderPage(); } });
+  $('pgPrev').addEventListener('click', () => { if (ui.page > 1) { ui.page--; renderTable(); } });
+  $('pgNext').addEventListener('click', () => { ui.page++; renderTable(); });
+  $('refresh').addEventListener('click', () => renderTable());
+
+  const CYCLE_COLS = [['sno', 'S. No.'], ['timestamp', 'Timestamp'], ['overallResult', 'Overall Result'], ['variant', 'Variant'],
+    ['resultImages', 'Result Images (SAs)'], ['rawImages', 'Raw Images'], ['resultsJson', 'Result JSON']];
+  const MINUTE_COLS = [['timeRange', 'Time Range'], ['variant', 'Variant'], ['total', 'Total'], ['pass', 'Pass'], ['fail', 'Fail'],
+    ['userFeedback', 'Reverse Judgement'], ['defectPercent', 'Defect %'], ['className', 'Class Name'], ['classCount', 'Class Count']];
+  const LIMIT = 50;
+  function pageRows() {
+    if (!S.instance || !S.variants.length) return [];
+    return DG.cycles(S.instance, S.range.from, S.range.to).filter((c) => S.variants.includes(c.variant)).reverse();   // newest first
+  }
+  function renderTable() {
+    const minute = ui.tab === 'minute';
+    const cols = minute ? MINUTE_COLS : CYCLE_COLS;
+    const w = $('tscroll').clientWidth || 1286, cw = Math.min(w / cols.length, 300);
+    $('cols').innerHTML = cols.map(() => `<col style="width:${cw}px">`).join('');
+    $('thead').innerHTML = cols.map((c) => `<th scope="col">${esc(c[1])}</th>`).join('');
+    // Minute-wise rows exist only for Fast Mode deployments; the sample deployments ran in normal mode.
+    const rows = minute ? [] : pageRows();
+    const total = rows.length, pages = Math.max(1, Math.ceil(total / LIMIT));
+    if (ui.page > pages) ui.page = pages;
+    const start = (ui.page - 1) * LIMIT, slice = rows.slice(start, start + LIMIT);
+    const res = (ok) => `<span class="res ${ok ? 'p' : 'f'}">${ok ? 'Pass' : 'Fail'}</span>`;
+    let html = slice.map((c, i) => '<tr>' + [
+      start + i + 1, esc(DG.fmtStopped(c.t)), res(c.pass), esc(c.variant),
+      '<button type="button" class="lnk">View Images</button>', '<button type="button" class="lnk">View Raw Images</button>',
+      '<span class="lnk" style="cursor:pointer">View JSON</span>'].map((v) => `<td><div>${v}</div></td>`).join('') + '</tr>').join('');
+    if (!slice.length) {
+      const msg = S.instance ? 'No results found.' : 'Select Instance and Variant to load data.';
+      html = `<tr><td class="empty" colspan="${cols.length}">${msg}</td></tr>`;
+    }
+    $('tbody').innerHTML = html;
+    const pass = rows.filter((c) => c.pass).length, fail = total - pass;
+    $('sTotal').textContent = total; $('sPass').textContent = pass; $('sFail').textContent = fail;
+    $('sDef').textContent = (total ? ((fail / total) * 100).toFixed(3) : '0.000') + '%';
+    $('pager').hidden = minute;
+    $('pagerText').textContent = total > 0 ? `${start + 1}–${Math.min(start + LIMIT, total)} of ${total}` : '0 results';
+    $('pgPrev').disabled = ui.page <= 1; $('pgNext').disabled = ui.page >= pages || !total;
+  }
+  function renderPage() {
+    const minute = ui.tab === 'minute';
+    $('tabCycle').classList.toggle('on', !minute); $('tabMinute').classList.toggle('on', minute);
+    $('outWrap').hidden = minute; $('moWrap').hidden = minute; $('addFilterWrap').hidden = minute;
+    $('dgWrap').hidden = !showDgButton();
+    $('pageDl').disabled = !S.instance;
+    pageTR.sync(); renderInstance(); renderVariant(); renderTable();
+    document.querySelectorAll('#seg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+    if (ui.modal && !showDgButton()) closeModal(true);
+  }
+
+  // ---------- Dimension Graph modal ----------
+  const COLORS = ['#ff4301', '#2563eb', '#16a34a', '#9333ea', '#0d9488', '#d97706'];
+  const CYCLE_CAP = 20000;
+  let chart = null;
+  const modalTR = TimeRange($('modalTR'), () => ui.mRange, (r) => { ui.mRange = r; renderChart(); }, () => { closeDims(); closeDl(); DG.postNav('range', { inPlace: true }); });
+  const unitText = (u) => (u === '°' ? '°' : ' ' + u);
+  const dimLabel = (d) => { const def = DG.dimOf(S.instance, d.variant, d.id); return `${d.variant} · ${d.id} (${def ? def.unit : ''})`; };
+  const sel = (v, id) => S.dims.findIndex((d) => d.variant === v && d.id === id);
+  const MAX_DIMS = 6;
+  // Units in plotting order: the first one owns the left axis, the second the right axis.
+  const unitsOf = (dims) => dims.reduce((u, d) => { const def = DG.dimOf(S.instance, d.variant, d.id); if (def && !u.includes(def.unit)) u.push(def.unit); return u; }, []);
+  function blockedWhy(def, on) {
+    if (on) return '';
+    if (S.dims.length >= MAX_DIMS) return 'Up to 6 dimensions at a time';
+    const u = unitsOf(S.dims);
+    return u.length >= 2 && !u.includes(def.unit) ? 'Up to two units at a time' : '';
+  }
+
+  function renderDims() {
+    const inst = instObj(), n = S.dims.length;
+    let html = `<button type="button" class="chip" data-act="dims" aria-expanded="${ui.dimsOpen}"><span class="t">Dimensions</span>${icon('i-down')}${n ? `<span class="badge">${n}</span>` : ''}</button>`;
+    if (ui.dimsOpen && inst) {
+      html += '<div class="dd dgdd" role="listbox" aria-multiselectable="true">' + inst.variants.filter((v) => v.dims.length).map((v) =>
+        `<div class="ddh">${esc(v.name)}</div>` + v.dims.map((d) => {
+          const on = sel(v.name, d.id) >= 0, why = blockedWhy(d, on);
+          return `<div class="opt${why ? ' off' : ''}" role="option" aria-selected="${on}"${why ? ` aria-disabled="true" title="${esc(why)}"` : ''} data-v="${esc(v.name)}" data-d="${esc(d.id)}"><span class="cb${on ? ' on' : ''}"></span><span class="l">${esc(d.id)}</span><span class="u">${esc(d.unit)}</span></div>`;
+        }).join('')).join('') + '</div>';
+    }
+    $('dimWrap').innerHTML = html;
+  }
+  function closeDims() { if (ui.dimsOpen) { ui.dimsOpen = false; renderDims(); } }
+  function closeDl() { if (ui.dlOpen) { ui.dlOpen = false; $('dlMenu').hidden = true; } }
+  $('dimWrap').addEventListener('click', (e) => {
+    const t = e.target.closest('[data-act],[data-v]');
+    if (!t) return;
+    if (t.dataset.act === 'dims') { ui.dimsOpen = !ui.dimsOpen; if (ui.dimsOpen) closeDl(); renderDims(); return; }
+    e.stopPropagation(); e.preventDefault();
+    if (t.classList.contains('off')) return;
+    const i = sel(t.dataset.v, t.dataset.d), before = S.dims.length, unitsBefore = unitsOf(S.dims).length;
+    if (i >= 0) S.dims.splice(i, 1);
+    else S.dims.push({ variant: t.dataset.v, id: t.dataset.d });
+    persist(); renderDims(); renderChart(); renderModalControls();
+    const n = S.dims.length;
+    if (before === 0 && n === 1) DG.postNav('one', { inPlace: true });
+    else if (before === 2 && n === 3) DG.postNav('multi', { inPlace: true });
+    else if (n === 2 && n > before && unitsBefore === 1 && unitsOf(S.dims).length === 2) DG.postNav('units', { inPlace: true });
+  });
+  // Download: off while nothing is picked or the picked dimensions have no results in the range.
+  function syncDl() {
+    const off = S.dims.length === 0 || !ui.hasData;
+    $('dlBtn').disabled = off;
+    if (off) ui.dlOpen = false;
+    $('dlMenu').hidden = !ui.dlOpen;
+    $('dlBtn').setAttribute('aria-expanded', String(ui.dlOpen));
+  }
+  function renderModalControls() { $('dgInst').textContent = S.instance; syncDl(); }
+  $('dlBtn').addEventListener('click', () => {
+    if (!S.dims.length || !ui.hasData) return;
+    ui.dlOpen = !ui.dlOpen; renderModalControls();
+    if (ui.dlOpen) { closeDims(); if (modalTR.open) modalTR.setOpen(false); DG.postNav('download', { inPlace: true }); }
+  });
+  document.addEventListener('mousedown', (e) => {
+    if (ui.dimsOpen && !$('dimWrap').contains(e.target)) closeDims();
+    if (ui.dlOpen && !$('dlWrap').contains(e.target)) { ui.dlOpen = false; renderModalControls(); }
+    // modules/modal: a mousedown outside the card closes it
+    if (ui.modal && !$('dgCard').contains(e.target) && !$('proto').contains(e.target)) closeModal();
+  });
+  $('dgClose').addEventListener('click', () => closeModal());
+
+  function openModal() {
+    ui.modal = true; ui.mRange = { from: S.range.from, to: S.range.to }; ui.dimsOpen = false; ui.dlOpen = false;
+    S.dims = []; persist();
+    $('dg').hidden = false;
+    modalTR.sync(); renderDims(); renderChart(); renderModalControls();
+  }
+  function closeModal(silent) {
+    ui.modal = false; ui.dimsOpen = false; ui.dlOpen = false;
+    if (modalTR.open) modalTR.setOpen(false);
+    $('dg').hidden = true;
+    if (chart) { chart.destroy(); chart = null; }
+    if (!silent) DG.postNav('reports', { inPlace: true });
+  }
+  $('dgBtn').addEventListener('click', () => { openModal(); DG.postNav('modal', { inPlace: true }); });
+
+  // Plotted series: one per selected dimension, cycles of its variant in the modal's range (latest 20,000 cycles).
+  function series() {
+    const variants = new Set(S.dims.map((d) => d.variant));
+    let cyc = DG.cycles(S.instance, ui.mRange.from, ui.mRange.to).filter((c) => variants.has(c.variant));
+    const capped = cyc.length > CYCLE_CAP;
+    if (capped) cyc = cyc.slice(cyc.length - CYCLE_CAP);
+    const sets = S.dims.map((d, i) => {
+      const def = DG.dimOf(S.instance, d.variant, d.id);
+      const pts = cyc.filter((c) => c.variant === d.variant).map((c) => ({ x: c.t, y: c.vals[d.id] }));
+      return { d, def, color: COLORS[i], pts };
+    });
+    return { cyc, capped, sets };
+  }
+
+  // Time ticks on round local times, labelled DD/MM HH:mm
+  const STEPS = [5, 10, 15, 30, 60, 120, 180, 360, 720, 1440, 2880, 10080].map((m) => m * 60000);
+  function timeTicks(min, max, px) {
+    const want = Math.max(2, Math.floor(px / 110));
+    const step = STEPS.find((s) => (max - min) / s <= want) || STEPS[STEPS.length - 1];
+    const d0 = new Date(min); d0.setHours(0, 0, 0, 0);
+    let t = d0.getTime();
+    const out = [];
+    if (step >= 1440 * 60000) { while (t < min) t += DG.DAY; for (; t <= max; t += step) out.push(t); }
+    else { t += Math.ceil((min - t) / step) * step; for (; t <= max; t += step) out.push(t); }
+    return out;
+  }
+
+  function renderChart() {
+    const empty = $('dgEmpty'), cv = $('dgCanvas');
+    const showEmpty = (msg) => { if (chart) { chart.destroy(); chart = null; } cv.hidden = true; empty.hidden = false; empty.textContent = msg; $('dgLimit').hidden = true; ui.hasData = false; syncDl(); };
+    if (!S.dims.length) return showEmpty('Select a dimension to plot.');
+    const { capped, sets } = series();
+    if (!sets.some((s) => s.pts.some((p) => p.y != null))) return showEmpty('No dimension results in this time range.');
+    if (typeof Chart === 'undefined') return showEmpty('Chart could not load.');
+    empty.hidden = true; cv.hidden = false; $('dgLimit').hidden = !capped; ui.hasData = true;
+    const units = unitsOf(S.dims);
+    let xmin = Infinity, xmax = -Infinity;
+    sets.forEach((s) => s.pts.forEach((p) => { if (p.x < xmin) xmin = p.x; if (p.x > xmax) xmax = p.x; }));
+    if (xmax - xmin < 10 * 60000) { xmin -= 5 * 60000; xmax += 5 * 60000; }
+    const datasets = sets.map((s) => ({
+      label: `${s.d.variant} · ${s.d.id} (${s.def.unit})`, unit: s.def.unit, data: s.pts,
+      borderColor: s.color, backgroundColor: s.color, pointBackgroundColor: s.color, pointBorderColor: s.color,
+      borderWidth: 1.5, pointRadius: 2, pointHoverRadius: 4, tension: 0, spanGaps: false, fill: false,
+      yAxisID: s.def.unit === units[0] ? 'y' : 'y1',
+    }));
+    // Unit titles sit level above each Y axis (a rotated "°" would read as a dot).
+    const unitTitles = { id: 'unitTitles', afterDraw(c) {
+      const g = c.ctx, top = c.chartArea.top;
+      g.save(); g.fillStyle = '#6b7280'; g.font = "500 12px 'Outfit', sans-serif"; g.textBaseline = 'bottom';
+      [['y', 'right'], ['y1', 'left']].forEach(([id, align]) => {
+        const s = c.scales[id];
+        if (!s || !s.options.display || !s.options.unitText) return;
+        g.textAlign = align;
+        g.fillText(s.options.unitText, align === 'right' ? s.right - 8 : s.left + 8, top - 8);
+      });
+      g.restore();
+    } };
+    const opts = {
+      animation: false, responsive: true, maintainAspectRatio: false, parsing: true, normalized: true,
+      interaction: { mode: 'nearest', intersect: false },
+      layout: { padding: { top: 4, right: 4 } },
+      scales: {
+        x: { type: 'linear', min: xmin, max: xmax, grid: { color: '#f3f4f6' }, border: { color: '#e5e7eb' },
+          ticks: { color: '#6b7280', maxRotation: 0, autoSkip: false, font: { size: 12 }, callback: (v) => DG.fmtTick(v) },
+          afterBuildTicks: (axis) => { axis.ticks = timeTicks(xmin, xmax, axis.width || 900).map((v) => ({ value: v })); } },
+        y: { type: 'linear', position: 'left', beginAtZero: false, grace: '5%', grid: { color: '#f3f4f6' }, border: { color: '#e5e7eb' },
+          ticks: { color: '#6b7280', font: { size: 12 } }, unitText: units[0] },
+        y1: { type: 'linear', position: 'right', display: units.length > 1, beginAtZero: false, grace: '5%',
+          grid: { drawOnChartArea: false, color: '#f3f4f6' }, border: { color: '#e5e7eb' },
+          ticks: { color: '#6b7280', font: { size: 12 } }, unitText: units[1] || '' },
+      },
+      plugins: {
+        legend: { position: 'top', align: 'start', onClick: null,
+          labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 7, boxHeight: 6, padding: 16, color: '#374151', font: { size: 13, weight: 500 } } },
+        tooltip: {
+          backgroundColor: 'rgba(17,24,39,.92)', padding: 10, cornerRadius: 6, titleFont: { size: 12, weight: 600 }, bodyFont: { size: 13 },
+          usePointStyle: true, boxWidth: 8, boxHeight: 8,
+          callbacks: {
+            title: (items) => (items.length ? DG.fmtFull(items[0].parsed.x) : ''),
+            label: (it) => { const ds = it.dataset; const [vn, rest] = ds.label.split(' · '); return `${vn} · ${rest.replace(/ \(.*\)$/, '')}: ${it.parsed.y.toFixed(2)}${unitText(ds.unit)}`; },
+          },
+        },
+      },
+    };
+    if (chart) { chart.destroy(); chart = null; }
+    // Room under the legend for the unit titles.
+    const legendGap = { id: 'legendGap', beforeInit(c) { const fit = c.legend.fit; c.legend.fit = function () { fit.bind(c.legend)(); this.height += 18; }; } };
+    chart = new Chart(cv, { type: 'line', data: { datasets }, options: opts, plugins: [legendGap, unitTitles] });
+    syncDl();
+  }
+
+  // ---------- Downloads ----------
+  function saveBlob(blob, name) {
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+  const fileStem = () => {
+    const f = (ms) => DG.fmtChip(ms).replace(/\//g, '-').replace(':', '');
+    return `${S.instance} Dimension Graph ${f(ui.mRange.from)} to ${f(ui.mRange.to)}`;
+  };
+  $('dlPng').addEventListener('click', () => {
+    ui.dlOpen = false; renderModalControls();
+    const box = $('dgCv'), src = chart ? chart.canvas : null;
+    const k = src ? (src.width / src.clientWidth || 1) : (window.devicePixelRatio || 1);
+    const cw = src ? src.width : Math.round(box.clientWidth * k), ch = src ? src.height : Math.round(box.clientHeight * k);
+    const headH = Math.round(44 * k), pad = Math.round(16 * k);
+    const out = document.createElement('canvas');
+    out.width = cw + pad * 2; out.height = ch + headH + pad;
+    const g = out.getContext('2d');
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, out.width, out.height);
+    g.fillStyle = '#1f2937'; g.font = `600 ${Math.round(15 * k)}px Outfit, sans-serif`; g.textBaseline = 'middle';
+    g.fillText(`${S.instance} · Dimension Graph · ${DG.rangeText(ui.mRange)}`, pad, Math.round(headH / 2 + 4 * k));
+    if (src) g.drawImage(src, pad, headH);
+    else { g.fillStyle = '#6b7280'; g.font = `400 ${Math.round(14 * k)}px Outfit, sans-serif`; g.textAlign = 'center'; g.fillText($('dgEmpty').textContent, out.width / 2, headH + ch / 2); }
+    out.toBlob((b) => { if (b) saveBlob(b, fileStem() + '.png'); }, 'image/png');
+  });
+  $('dlCsv').addEventListener('click', () => {
+    ui.dlOpen = false; renderModalControls();
+    const { cyc } = series();
+    const names = S.dims.map((d) => d.id);
+    const header = S.dims.map((d) => {
+      const def = DG.dimOf(S.instance, d.variant, d.id), base = `${d.id} (${def.unit})`;
+      return names.filter((n) => n === d.id).length > 1 ? `${d.variant} · ${base}` : base;   // same name in two variants: say which
+    });
+    const q = (s) => (/[",\n]/.test(s) ? `"${String(s).replace(/"/g, '""')}"` : String(s));
+    const lines = [['Timestamp', 'Variant'].concat(header).map(q).join(',')];
+    cyc.forEach((c) => {
+      lines.push([DG.fmtFull(c.t), c.variant].concat(S.dims.map((d) => (d.variant === c.variant && c.vals[d.id] != null ? String(c.vals[d.id]) : ''))).map(q).join(','));
+    });
+    saveBlob(new Blob(['﻿' + lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' }), fileStem() + '.csv');
+  });
+
+  // ---------- Prototype mode switch (standalone only) ----------
+  $('seg').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-mode]');
+    if (!b || b.dataset.mode === mode) return;
+    const p = new URLSearchParams(location.search); p.set('mode', b.dataset.mode);
+    location.replace(location.pathname + '?' + p.toString());
+  });
+
+  // Another tab changed the shared state: follow it.
+  window.addEventListener('storage', (e) => {
+    if (e.key !== DG.KEY) return;
+    S = DG.load();
+    renderPage();
+    if (ui.modal) { renderDims(); renderChart(); renderModalControls(); }
+  });
+  window.addEventListener('resize', () => renderTable());
+
+  // ---------- First paint ----------
+  renderPage();
+  if (ui.modal) {
+    $('dg').hidden = false;
+    modalTR.sync();
+    if (stateName === 'range') modalTR.setOpen(true);
+    renderDims(); renderChart(); renderModalControls();
+  }
+  // Canvas text needs the web font: redraw once Outfit is ready.
+  if (document.fonts && document.fonts.load) {
+    Promise.all([document.fonts.load("500 13px Outfit"), document.fonts.load("400 12px Outfit"), document.fonts.load("600 15px Outfit")])
+      .then(() => { if (ui.modal) renderChart(); }).catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
