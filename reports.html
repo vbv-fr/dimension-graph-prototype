@@ -52,7 +52,7 @@ button:disabled{cursor:default}
 .heading .h1{font-size:30px;line-height:36px;font-weight:500;white-space:nowrap}
 .heading .hsub{display:flex;align-items:baseline;gap:8px;font-size:20px;line-height:28px;font-weight:500}
 /* The Heading's empty subcontent slot adds an 8px gap: pull the button back so it sits the title's 20px padding away. */
-.dgw{margin-left:-8px;margin-top:8px}
+.dgw[hidden]{display:none}
 .hr{display:flex;align-items:center;gap:12px;margin:8px 20px 0 0}
 .tabs{display:flex;align-items:center;height:36px;padding:4px;border-radius:8px;background:var(--g100)}
 .tabs button{display:flex;align-items:center;gap:4px;height:36px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;
@@ -289,9 +289,6 @@ td.empty{padding:8px 0;text-align:center;font-size:16px;color:var(--g600);backgr
   <header class="top">
     <div class="hl">
       <div class="heading"><div class="h1">Analytics &amp; Reports</div><div class="hsub"></div></div>
-      <div class="dgw" id="dgWrap" hidden>
-        <button type="button" class="obtn" id="dgBtn"><svg class="i i14"><use href="#i-trend"/></svg>Dimension Graph</button>
-      </div>
     </div>
     <div class="hr">
       <div class="tabs">
@@ -318,6 +315,7 @@ td.empty{padding:8px 0;text-align:center;font-size:16px;color:var(--g600);backgr
             <button type="button" class="chip" style="width:100px"><span class="t">Outcome</span><svg class="i"><use href="#i-down"/></svg><span class="badge">2</span></button>
           </div>
         </div>
+        <div class="tipw dgw" id="dgWrap" hidden><button type="button" class="obtn" id="dgBtn"><svg class="i i14"><use href="#i-trend"/></svg>Dimension Graph</button></div>
         <div class="tipw" id="moWrap"><button type="button" class="obtn" id="moBtn"><svg class="i i14"><use href="#i-list"/></svg>Module Outputs</button></div>
         <div class="tipw"><button type="button" class="ibtn" aria-label="Edit Table"><svg class="i"><use href="#i-edit2"/></svg></button><div class="tip">Edit Table</div></div>
         <div class="tipw"><button type="button" class="ibtn" id="pageDl" aria-label="Download"><svg class="i"><use href="#i-dl"/></svg></button><div class="tip">Download</div></div>
